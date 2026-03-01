@@ -1,0 +1,969 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LOCK Soi XSMB v9.1 MASTER + v9.2 PRO+</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --card:#121824; --muted:#93a4b8; --text:#e8eef6;
+      --acc:#4da3ff; --bad:#ff6b6b; --ok:#33d69f; --warn:#ffcc66; --line:#233041;
+      --chip:#1b2433;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.35}
+    header{padding:16px 16px 8px}
+    h1{margin:0 0 6px;font-size:18px}
+    .sub{color:var(--muted);font-size:12px}
+    .wrap{padding:12px 12px 86px;max-width:1020px;margin:0 auto}
+    .grid{display:grid;gap:12px}
+    @media(min-width:980px){ .grid{grid-template-columns: 1.35fr 0.65fr} }
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+    .card h2{margin:0 0 8px;font-size:14px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn{
+      border:1px solid var(--line); background:#0f1520; color:var(--text);
+      padding:10px 12px;border-radius:10px; font-weight:700; cursor:pointer;
+    }
+    .btn:hover{border-color:#2f4157}
+    .btn.acc{background:#12233a;border-color:#214263}
+    .btn.danger{background:#2a1518;border-color:#5a2228;color:#ffd7d7}
+    .btn.small{padding:7px 10px;font-size:12px;border-radius:9px}
+    .pill{display:inline-flex;gap:6px;align-items:center;background:var(--chip);border:1px solid var(--line);
+      padding:6px 10px;border-radius:999px;font-size:12px;color:var(--muted)}
+    textarea{
+      width:100%; min-height:136px; resize:vertical; border-radius:10px;
+      border:1px solid var(--line); background:#0f1520; color:var(--text);
+      padding:10px; font-family:var(--mono); font-size:12px;
+    }
+    input[type="date"]{
+      border:1px solid var(--line);background:#0f1520;color:var(--text);
+      padding:9px 10px;border-radius:10px;font-weight:700;
+    }
+    .slot{display:grid;gap:8px;margin-top:10px}
+    .slotBox{background:#0f1520;border:1px solid #243449;border-radius:12px;padding:10px}
+    .slotHead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+    .slotHead .title{font-weight:800}
+    .meta{font-size:12px;color:var(--muted)}
+    .mono{font-family:var(--mono)}
+    .hr{height:1px;background:var(--line);margin:10px 0}
+    .tag{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;
+      border:1px solid var(--line);background:#0f1520;font-size:12px}
+    .tag.ok{border-color:#1c5b45;color:#b9ffe6}
+    .tag.bad{border-color:#6a2a31;color:#ffd7d7}
+    .tag.warn{border-color:#6a5a2a;color:#fff1c7}
+    .tag.neu{color:#cfe0f5}
+    .list{display:grid;gap:10px}
+    .historyItem{border:1px solid var(--line);background:#0f1520;border-radius:12px;padding:10px;display:grid;gap:8px}
+    .historyTop{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .historyTop strong{font-size:13px}
+    .small{font-size:12px;color:var(--muted)}
+    .twoCol{display:grid;gap:8px}
+    @media(min-width:680px){ .twoCol{grid-template-columns:1fr 1fr} }
+    .kv{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted)}
+    .kv b{color:var(--text);font-weight:800}
+    .kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+    .kpi .box{border:1px solid var(--line);border-radius:12px;padding:10px;background:#0f1520}
+    .kpi .lab{font-size:11px;color:var(--muted)}
+    .kpi .val{font-size:16px;font-weight:900;margin-top:4px}
+    .footerBar{
+      position:fixed;left:0;right:0;bottom:0;background:rgba(11,15,20,.92);
+      border-top:1px solid var(--line);padding:10px 12px;backdrop-filter: blur(10px);
+    }
+    .footerBar .inner{max-width:1020px;margin:0 auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#101827;border:1px solid var(--line);
+      color:var(--text);padding:10px 12px;border-radius:999px;font-size:12px;display:none;z-index:50}
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast"></div>
+  <header>
+    <div class="wrap" style="padding:0 12px">
+      <h1>LOCK Soi XSMB — v9.1 MASTER + v9.2 PRO+ (CHUẨN THEO SPEC)</h1>
+      <div class="sub">
+        Nhập <b>đúng 10 ngày</b> theo format ĐB/G1..G7. Mỗi ngày = <b>1 khung</b>. App tự parse 2 số cuối (27 lô/ngày), chạy đủ bước: MODE → Tầng → Candidate → Confidence → KILL → SCORE v9.1 → SCORE v9.2 → DOUBLE SCORE → AUTO SIGNAL.
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+      <section class="card" id="inputCard">
+        <h2>1) Nhập KQ 10 ngày (mỗi khung 1 ngày)</h2>
+        <div class="meta">Format ví dụ (copy/paste): <span class="mono">KQ XSMB 13/02/2026 … ĐB: … G1: … G2: … G7: …</span></div>
+
+        <div class="hr"></div>
+        <div class="row">
+          <span class="pill">Ngày chốt (ngày đánh):</span>
+          <input type="date" id="targetDate" />
+          <span class="pill">Hợp lệ: <b id="windowLabel">0/10</b></span>
+        </div>
+
+        <div id="slots"></div>
+
+        <div class="hr"></div>
+        <div class="row">
+          <button class="btn acc" id="runBtn">Chạy v9.1 + v9.2 & Chốt</button>
+          <button class="btn" id="fillDemoBtn">Dán demo (1 ngày)</button>
+          <button class="btn danger" id="clearAllBtn">Xoá toàn bộ 10 khung</button>
+        </div>
+
+        <div class="hr"></div>
+        <h2>2) Kết quả chốt</h2>
+        <div id="resultArea" class="list">
+          <div class="meta">Chưa chạy.</div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>3) Lịch sử chốt</h2>
+        <div class="row" style="margin-bottom:8px">
+          <button class="btn small" id="exportBtn">Xuất JSON</button>
+          <button class="btn small danger" id="wipeHistoryBtn">Xoá lịch sử</button>
+        </div>
+        <div class="meta">Lưu trên máy (localStorage). Không upload.</div>
+        <div class="hr"></div>
+        <div id="history" class="list"></div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="footerBar">
+    <div class="inner">
+      <div class="pill">Chốt gần nhất: <b id="lastPick">—</b></div>
+      <div class="pill">Tỉ lệ trúng: <b id="hitRate">—</b></div>
+    </div>
+  </div>
+
+<script>
+/** ========= Storage ========= */
+const LS_KEY = "lock_soi_v91_v92_slots_v2";
+const LS_HIST = "lock_soi_v91_v92_history_v2";
+const LS_TARGET = "lock_soi_v91_v92_target_v2";
+
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)) || { slots: Array(10).fill("") }; }
+  catch(e){ return { slots: Array(10).fill("") }; }
+}
+function saveState(state){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(LS_HIST)) || []; }
+  catch(e){ return []; }
+}
+function saveHistory(hist){ localStorage.setItem(LS_HIST, JSON.stringify(hist)); }
+
+/** ========= UI helpers ========= */
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>{t.style.display="none"}, 1800);
+}
+function el(tag, attrs={}, children=[]){
+  const n=document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v])=>{
+    if(k==="class") n.className=v;
+    else if(k==="html") n.innerHTML=v;
+    else n.setAttribute(k,v);
+  });
+  (Array.isArray(children)?children:[children]).forEach(c=>{
+    if(c===null || c===undefined) return;
+    if(typeof c==="string") n.appendChild(document.createTextNode(c));
+    else n.appendChild(c);
+  });
+  return n;
+}
+
+/** ========= Parsing ========= */
+function last2(numStr){
+  const digits = (numStr||"").replace(/\D+/g,"");
+  if(!digits) return null;
+  return digits.slice(-2).padStart(2,"0");
+}
+function parseDate(raw){
+  const m = raw.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(!m) return null;
+  const dd = String(m[1]).padStart(2,"0");
+  const mm = String(m[2]).padStart(2,"0");
+  const yyyy = m[3];
+  return `${yyyy}-${mm}-${dd}`;
+}
+function parseOneDay(raw){
+  const text = (raw||"").replace(/\u00A0/g," ").trim(); // normalize NBSP
+  if(!text) return null;
+
+  const date = parseDate(text);
+  if(!date) return { ok:false, err:"Không thấy ngày (dd/mm/yyyy) trong đoạn KQ." };
+
+  // Pre-normalize common variants: G.1 -> G1, G 1 -> G1, ĐB! -> ĐB
+  const normText = text
+    .replace(/G\.\s*(\d)/gi, "G$1")
+    .replace(/G\s+(\d)/gi, "G$1")
+    .replace(/ĐB\s*[!*]*/gi, "ĐB")
+    .replace(/DB\s*[!*]*/gi, "DB")
+    .replace(/[:：]\s*\n/g, ":\n");
+
+  const buckets = {DB:[],G1:[],G2:[],G3:[],G4:[],G5:[],G6:[],G7:[]};
+  const lines = normText.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+
+  let current = null;
+  for(const ln0 of lines){
+    const ln = ln0.replace(/\s+/g," ").trim();
+    // Accept: "ĐB: 12345", "ĐB!: 12345", "G4*: ...", "G3 123 456", "G7= 01 02"
+    const m = ln.match(/^(ĐB|DB|G1|G2|G3|G4|G5|G6|G7)\s*[*!]*\s*(?::|=|\s)\s*(.*)$/i);
+    if(m){
+      let key = m[1].toUpperCase();
+      if(key==="ĐB") key="DB";
+      current = key;
+      const rest = (m[2] || "").replace(/[,;]/g," ");
+      const nums = rest.match(/\d+/g) || [];
+      buckets[current].push(...nums);
+    }else if(current){
+      const nums = ln.replace(/[,;]/g," ").match(/\d+/g) || [];
+      buckets[current].push(...nums);
+    }
+  }
+
+  if(buckets.DB.length===0 || buckets.G1.length===0 || buckets.G2.length===0){
+    return { ok:false, err:"Thiếu ĐB/G1/G2. Hãy dán đủ KQ theo format." };
+  }
+
+  const prizes = {};
+  for(const k of Object.keys(buckets)){
+    prizes[k] = buckets[k].map(last2).filter(x=>x!==null);
+  }
+
+  // MB should be 27 lô
+  const lo = [].concat(prizes.DB, prizes.G1, prizes.G2, prizes.G3, prizes.G4, prizes.G5, prizes.G6, prizes.G7);
+  if(lo.length !== 27){
+    // Helpful hint about likely culprit
+    const hint = (buckets.G3.length!==6) ? " (G3 chuẩn 6 số)" :
+                 (buckets.G4.length!==4) ? " (G4 chuẩn 4 số)" :
+                 (buckets.G5.length!==6) ? " (G5 chuẩn 6 số)" :
+                 (buckets.G6.length!==3) ? " (G6 chuẩn 3 số)" :
+                 (buckets.G7.length!==4) ? " (G7 chuẩn 4 số)" : "";
+    return { ok:false, err:`Không đủ 27 lô (hiện ${lo.length}). Có thể thiếu/nhầm giải.${hint}` };
+  }
+
+  return { ok:true, date, prizes, lo };
+}
+
+/** ========= v9.1/v9.2 SPEC engine =========
+  - MODE SNIPER nếu >=2: (1 tầng áp đảo rõ rệt), (ĐB/G1/G2 đồng pha), (bảng gọn ít nhiễu), (confidence dự kiến >=5)
+  - TẦNG CHI PHỐI (10 ngày): xuất hiện >=20% (theo head 0-9 trên 27 lô/ngày) và không bùng ảo
+  - TOP TẦNG (3 ngày): nếu top1 thuộc tầng chi phối -> chọn top1, else chọn tầng chi phối
+  - CANDIDATE scoring trong tầng T:
+      +2: DB/G1/G2; +1: G3/G4; +0.5: G5/G6; -1: xuất hiện N-1; -1: ra liên tiếp 2 ngày
+    PRO: số đẹp nhưng lệch pha => giảm 50% điểm (áp vào điểm candidate trước khi chọn)
+  - CONFIDENCE (0–6):
+      Pha: +2 rõ / +1 vừa / 0 loạn
+      Trục (DB/G1/G2 5 ngày): +2 mạnh / +1 nhẹ / 0 lệch
+      Tầng (3 ngày): +2 Top1 >> Top2 / +1 Top1 > Top2 / 0 ngang
+      Lệch pha: -1 nếu tầng T != tầng DB và trục nghiêng tầng khác
+  - KILL: bật nếu >=2 điều kiện (nhiễu N-1, DB+G1+G2 cùng tầng, candidate>=3 lần/3 ngày, top1 không áp đảo)
+  - PHÂN LOẠI:
+      REAL: conf>=5 & KILL OFF
+      RISKY-A: conf=4 & KILL<=1
+      RISKY-B: conf=2-3
+      FAKE: conf<=2 hoặc KILL ON hoặc không có tầng chi phối
+      SNIPER: chỉ giữ REAL, còn lại FAKE
+  - SCORE v9.1 (0–10):
+      A Tầng (0–4) = 4 nếu có tầng chi phối, else 0
+      B Trục (0–3) = 3*(mức trục: mạnh=1, nhẹ=0.5, lệch=0)
+      C Candidate (0–3) = clamp( (điểm candidate đã tính) / 6 * 3, 0..3 )
+      Trừ: bảng loạn -2 (pha=0), candidate sát N-1 (-1), trục đẹp quá mức (-1) nếu trục mạnh & đồng pha quá cao (>=60% ở axis top1)
+  - SCORE v9.2:
+      chỉnh từ v9.1 theo "tầng chi phối & ngược pha":
+        +0.5 nếu T trùng tầng chi phối
+        -0.5 nếu lệch pha (conf.lech=-1)
+        -0.5 nếu DB/G1/G2 5 ngày nghiêng rõ về tầng khác (axis top1 != T và axis top1 share>=45%)
+*/
+function headOf(twoDigits){ return parseInt(twoDigits[0],10); }
+function isNice(twoDigits){ return twoDigits[0]===twoDigits[1]; }
+
+function dominantLayer10(days10){
+  const total = days10.length*27;
+  const counts = Array(10).fill(0);
+  const perDay = []; // counts per day for candidate layer
+  for(const d of days10){
+    const c = Array(10).fill(0);
+    for(const n of d.lo){ counts[headOf(n)]++; c[headOf(n)]++; }
+    perDay.push(c);
+  }
+  // choose max
+  let layer=0, max=counts[0];
+  for(let i=1;i<10;i++){ if(counts[i]>max){max=counts[i]; layer=i;} }
+  const pct = max/total;
+  if(pct < 0.20) return { ok:false, reason:"Không có tầng chi phối (>=20%)." };
+
+  // "không bùng ảo": xuất hiện >= 50% số ngày và không dồn quá 35%/ngày
+  let daysWith=0, maxShare=0;
+  for(const c of perDay){
+    const v = c[layer];
+    if(v>0) daysWith++;
+    maxShare = Math.max(maxShare, v/27);
+  }
+  if(daysWith < Math.ceil(days10.length*0.5) || maxShare > 0.35){
+    return { ok:false, reason:"Tầng có dấu hiệu bùng ảo (không ổn định)." };
+  }
+  return { ok:true, layer, pct, count:max, daysWith, maxShare, counts };
+}
+
+function topLayer3(days3){
+  const counts = Array(10).fill(0);
+  for(const d of days3){ for(const n of d.lo) counts[headOf(n)]++; }
+  const sorted = counts.map((v,i)=>({h:i,v})).sort((a,b)=>b.v-a.v);
+  return { counts, top1: sorted[0], top2: sorted[1] };
+}
+
+function axis5(days5){
+  const counts = Array(10).fill(0);
+  for(const d of days5){
+    const arr = [].concat(d.prizes.DB, d.prizes.G1, d.prizes.G2); // 4 nums/day
+    for(const n of arr) counts[headOf(n)]++;
+  }
+  const total = days5.length*4;
+  const sorted = counts.map((v,i)=>({h:i,v})).sort((a,b)=>b.v-a.v);
+  return { counts, total, top1: sorted[0], top2: sorted[1] };
+}
+
+function candidateScores(days10, T){
+  // raw score by spec + penalty; returns sorted list
+  const map = new Map(); // n -> {score, days:Set, rawNoPenalty}
+  function ensure(n){
+    if(!map.has(n)) map.set(n, { n, score:0, days:new Set(), raw:0 });
+    return map.get(n);
+  }
+  for(let di=0; di<days10.length; di++){
+    const d = days10[di];
+    // +2 DB/G1/G2
+    for(const n of [].concat(d.prizes.DB, d.prizes.G1, d.prizes.G2)){
+      if(headOf(n)!==T) continue;
+      const e = ensure(n);
+      e.score += 2; e.raw += 2; e.days.add(di);
+    }
+    // +1 G3/G4
+    for(const n of [].concat(d.prizes.G3, d.prizes.G4)){
+      if(headOf(n)!==T) continue;
+      const e = ensure(n);
+      e.score += 1; e.raw += 1; e.days.add(di);
+    }
+    // +0.5 G5/G6
+    for(const n of [].concat(d.prizes.G5, d.prizes.G6)){
+      if(headOf(n)!==T) continue;
+      const e = ensure(n);
+      e.score += 0.5; e.raw += 0.5; e.days.add(di);
+    }
+    // G7 ignored
+  }
+
+  const newest = days10.length-1;
+  const prev = days10.length-2;
+
+  // apply -1 N-1 and -1 consecutive 2 days (N-1 & N)
+  for(const e of map.values()){
+    if(e.days.has(newest)) e.score -= 1;
+    if(prev>=0 && e.days.has(newest) && e.days.has(prev)) e.score -= 1;
+  }
+
+  return Array.from(map.values()).sort((a,b)=> b.score-a.score || a.n.localeCompare(b.n));
+}
+
+function computeConfidence(days10, T, top3, ax){
+  // Pha: based on dispersion last 3 days
+  const uniqueHeads = top3.counts.filter(v=>v>0).length;
+  const topShare = top3.top1.v / (3*27);
+  let pha=0;
+  if(topShare >= 0.26 && uniqueHeads <= 6) pha=2;
+  else if(topShare >= 0.22 && uniqueHeads <= 8) pha=1;
+  else pha=0;
+
+  // Trục: based on share of T within axis 5
+  const shareT = ax.counts[T] / ax.total;
+  let truc=0;
+  if(shareT >= 0.35) truc=2;
+  else if(shareT >= 0.25) truc=1;
+  else truc=0;
+
+  // Tầng: dominance top1 vs top2 on last 3
+  let tang=0;
+  if(top3.top1.v >= top3.top2.v + 4) tang=2;
+  else if(top3.top1.v > top3.top2.v) tang=1;
+  else tang=0;
+
+  // Lệch pha rule
+  const newest = days10[days10.length-1];
+  const dbLayer = headOf(newest.prizes.DB[0]);
+  let lech = 0;
+  if(T !== dbLayer && ax.top1.h !== T && (ax.top1.v > ax.top2.v)) lech = -1;
+
+  const total = Math.max(0, Math.min(6, pha+truc+tang+lech));
+  return { total, pha, truc, tang, lech, uniqueHeads, topShare, shareT, dbLayer };
+}
+
+function killRule(days10, candidate, top3){
+  const newest = days10[days10.length-1];
+
+  // N-1 nhiễu (>=4 tầng nổi, định nghĩa: head count >=3 trong ngày)
+  const hc = Array(10).fill(0);
+  for(const n of newest.lo) hc[headOf(n)]++;
+  const noi = hc.filter(v=>v>=3).length;
+  const cond1 = (noi >= 4);
+
+  // DB+G1+G2 cùng tầng
+  const a = [].concat(newest.prizes.DB, newest.prizes.G1, newest.prizes.G2);
+  const h0 = headOf(a[0]);
+  const cond2 = a.every(x=>headOf(x)===h0);
+
+  // candidate >=3 lần / 3 ngày
+  const last3 = days10.slice(-3);
+  let c=0;
+  for(const d of last3) for(const n of d.lo) if(n===candidate) c++;
+  const cond3 = (c >= 3);
+
+  // Top1 không áp đảo (top1 == top2)
+  const cond4 = !(top3.top1.v > top3.top2.v);
+
+  const on = [cond1,cond2,cond3,cond4].filter(Boolean).length >= 2;
+  return { on, cond1, cond2, cond3, cond4, noi, cand3:c };
+}
+
+function decideMode(dom, ax, top3, confPred){
+  const crit = [];
+  // 1 tầng áp đảo rõ rệt (dom ok & pct >= 0.23)
+  crit.push(dom.ok && dom.pct >= 0.23);
+  // ĐB/G1/G2 đồng pha (axis top1 share >= 0.40)
+  crit.push((ax.top1.v/ax.total) >= 0.40);
+  // Bảng gọn, ít nhiễu
+  const uniqueHeads = top3.counts.filter(v=>v>0).length;
+  const topShare = top3.top1.v / (3*27);
+  crit.push(uniqueHeads <= 6 && topShare >= 0.25);
+  // Confidence dự kiến >=5
+  crit.push(confPred >= 5);
+  const count = crit.filter(Boolean).length;
+  return { mode: (count>=2 ? "SNIPER" : "NORMAL"), count, crit };
+}
+
+function classifyBySpec(conf, killOn, hasDom, mode){
+  if(!hasDom) return "FAKE";
+  if(killOn) return "FAKE";
+  let c = "FAKE";
+  if(conf >= 5) c = "REAL";
+  else if(conf === 4) c = "RISKY-A";
+  else if(conf >= 2 && conf <= 3) c = "RISKY-B";
+  else c = "FAKE";
+  if(mode==="SNIPER" && c!=="REAL") c="FAKE";
+  return c;
+}
+
+function scoreV91(hasDom, conf, ax, candFinal){
+  // A: tầng (0-4) = 4 nếu có dom
+  const A = hasDom ? 4 : 0;
+
+  // B: trục (0-3) based on strong/weak/miss of T (use conf.truc)
+  let B = 0;
+  if(conf.truc === 2) B = 3;
+  else if(conf.truc === 1) B = 1.5;
+  else B = 0;
+
+  // C: candidate (0-3) based on candidateScore (max expected around 6+ for 10 days)
+  // clamp: 0..3
+  const C = Math.max(0, Math.min(3, (candFinal.score / 6) * 3 ));
+
+  let penalty = 0;
+  // bảng loạn -2 if pha == 0
+  if(conf.pha === 0) penalty += 2;
+  // candidate sát N-1 -1 if candidate appeared newest day
+  if(candFinal.isN1) penalty += 1;
+  // trục đẹp quá mức -1 if axis top1 share >= 0.60
+  const topShare = ax.top1.v / ax.total;
+  if(topShare >= 0.60) penalty += 1;
+
+  const total = Math.max(0, Math.min(10, A + B + C - penalty));
+  return { total, A, B, C, penalty };
+}
+
+function scoreV92(v91, dom, ax, T, conf){
+  let s = v91.total;
+  // +0.5 if T == dom layer
+  if(dom.ok && T === dom.layer) s += 0.5;
+  // -0.5 if lech pha
+  if(conf.lech < 0) s -= 0.5;
+  // -0.5 if axis leans strongly to other layer
+  const axisTopShare = ax.top1.v / ax.total;
+  if(ax.top1.h !== T && axisTopShare >= 0.45) s -= 0.5;
+
+  s = Math.max(0, Math.min(10, s));
+  return { total: s };
+}
+
+function doubleLevel(ds){
+  if(ds >= 8) return "SUPER REAL";
+  if(ds >= 6.5) return "REAL";
+  if(ds >= 5) return "RISKY-A";
+  if(ds >= 3) return "RISKY-B";
+  return "FAKE";
+}
+function autoSignal(ds, v91, v92){
+  if(ds >= 8) return "SUPER REAL";
+  if(ds >= 7.0 || (v91 >= 7.0 && v92 >= 6.5)) return "ON";
+  if(ds < 5.0) return "OFF";
+  return "OFF";
+}
+
+function runEngine(days){
+  if(days.length < 10) return { ok:false, err:`Chưa đủ 10 ngày hợp lệ (hiện ${days.length}).` };
+  const days10 = days.slice(-10);
+
+  const dom = dominantLayer10(days10);
+  const last3 = days10.slice(-3);
+  const top3 = topLayer3(last3);
+  const ax = axis5(days10.slice(-5));
+
+  const hasDom = dom.ok;
+
+  // choose T
+  let T = null;
+  if(!hasDom){
+    return { ok:true, hasDom:false, dom, mode:"NORMAL", T:null, candidate:null, confidence:{total:0}, kill:{on:true}, classBySpec:"FAKE",
+      v91:{total:0}, v92:{total:0}, ds:0, level:"FAKE", auto:"OFF", days10, top3, ax, candTop:[] };
+  }
+  T = (top3.top1.h === dom.layer) ? top3.top1.h : dom.layer;
+
+  // candidate scoring
+  const candTop = candidateScores(days10, T);
+  if(!candTop.length){
+    return { ok:true, hasDom, dom, mode:"NORMAL", T, candidate:null, confidence:{total:0}, kill:{on:true}, classBySpec:"FAKE",
+      v91:{total:0}, v92:{total:0}, ds:0, level:"FAKE", auto:"OFF", days10, top3, ax, candTop:[] };
+  }
+
+  // PRO rule: if number is "nice" and lech pha -> reduce 50% candidate score BEFORE selection
+  // Note: need confidence first; but lech pha depends on T/ax/DB; compute preliminary conf
+  const conf = computeConfidence(days10, T, top3, ax);
+
+  const newestIdx = days10.length-1;
+  const prevIdx = days10.length-2;
+  // compute adjusted score per candidate
+  const adjusted = candTop.map(e=>{
+    const isN1 = e.days.has(newestIdx);
+    const isConsec = prevIdx>=0 && e.days.has(newestIdx) && e.days.has(prevIdx);
+    let s = e.score;
+    const lech = (conf.lech < 0);
+    if(isNice(e.n) && lech){
+      s = s * 0.5; // PRO giảm 50%
+    }
+    return { ...e, adjScore:s, isN1, isConsec };
+  }).sort((a,b)=> b.adjScore - a.adjScore || a.n.localeCompare(b.n));
+
+  const pick = adjusted[0];
+  const candidate = pick.n;
+
+  // kill
+  const kill = killRule(days10, candidate, top3);
+
+  // mode
+  const m = decideMode(dom, ax, top3, conf.total);
+
+  // classification
+  const classBy = classifyBySpec(conf.total, kill.on, hasDom, m.mode);
+
+  // v9.1 score
+  const v91 = scoreV91(hasDom, conf, ax, {score: pick.adjScore, isN1: pick.isN1});
+  // v9.2 score
+  const v92 = scoreV92(v91, dom, ax, T, conf);
+
+  const ds = (v91.total + v92.total) / 2;
+  const level = doubleLevel(ds);
+  const auto = autoSignal(ds, v91.total, v92.total);
+
+  return {
+    ok:true,
+    hasDom, dom,
+    mode: m.mode, modeMeta: m,
+    T, candidate,
+    confidence: conf,
+    kill,
+    classBySpec: classBy,
+    v91, v92,
+    ds, level, auto,
+    days10, top3, ax,
+    candTop: adjusted.slice(0,10),
+    pickInfo: pick
+  };
+}
+
+/** ========= Rendering ========= */
+function tagClass(level){
+  if(level==="SUPER REAL" || level==="REAL") return "ok";
+  if(level==="RISKY-A" || level==="RISKY-B") return "warn";
+  return "bad";
+}
+
+const state = loadState();
+const slotsEl = document.getElementById("slots");
+
+function collectParsed(){
+  const okDays = [];
+  const errors = [];
+  for(let i=0;i<10;i++){
+    const raw = (state.slots[i]||"").trim();
+    if(!raw) continue;
+    const p = parseOneDay(raw);
+    if(!p || !p.ok){
+      errors.push({slot:i+1, err:p?.err || "Parse fail"});
+      continue;
+    }
+    okDays.push(p);
+  }
+  // dedupe by date (keep last)
+  const byDate = new Map();
+  for(const d of okDays) byDate.set(d.date, d);
+  const uniq = Array.from(byDate.values()).sort((a,b)=>a.date.localeCompare(b.date));
+  return { okDays: uniq, errors };
+}
+
+function updateWindowLabel(){
+  const p = collectParsed();
+  document.getElementById("windowLabel").textContent = `${p.okDays.length}/10`;
+}
+
+function renderSlots(){
+  slotsEl.innerHTML = "";
+  for(let i=0;i<10;i++){
+    const idx=i;
+    const taId=`slot_${i}`;
+
+    const status = el("div",{class:"row", style:"gap:6px;flex-wrap:wrap"},[
+      el("span",{class:"tag neu", id:`st_${i}`},["Chưa nhập"]),
+    ]);
+
+    const head = el("div",{class:"slotHead"},[
+      el("div",{},[
+        el("div",{class:"title"},`Khung ${i+1}`),
+        el("div",{class:"meta"},`Dán 1 ngày KQ (có ngày dd/mm/yyyy).`),
+        status
+      ]),
+      el("div",{class:"row"},[
+        el("button",{class:"btn small", type:"button"},["Dán"]),
+        el("button",{class:"btn small danger", type:"button"},["Xoá"])
+      ])
+    ]);
+
+    const box = el("div",{class:"slotBox slot"},[
+      head,
+      el("textarea",{id:taId, placeholder:"Dán KQ XSMB ..."})
+    ]);
+
+    const ta = box.querySelector("textarea");
+    ta.value = state.slots[i] || "";
+
+    function refreshStatus(){
+      const raw = ta.value.trim();
+      const st = document.getElementById(`st_${i}`);
+      if(!raw){ st.className="tag neu"; st.textContent="Chưa nhập"; return; }
+      const p = parseOneDay(raw);
+      if(p && p.ok){
+        st.className="tag ok";
+        st.textContent=`OK • ${p.date} • 27 lô`;
+      }else{
+        st.className="tag bad";
+        st.textContent=`LỖI • ${p?.err || "Parse fail"}`;
+      }
+    }
+
+    ta.addEventListener("input", ()=>{
+      state.slots[idx]=ta.value;
+      saveState(state);
+      refreshStatus();
+      updateWindowLabel();
+      autoSuggestTarget();
+    });
+
+    const [btnPaste, btnClear] = box.querySelectorAll("button");
+    btnClear.addEventListener("click", ()=>{
+      ta.value="";
+      state.slots[idx]="";
+      saveState(state);
+      refreshStatus();
+      updateWindowLabel();
+      autoSuggestTarget();
+      toast(`Đã xoá khung ${idx+1}`);
+    });
+
+    btnPaste.addEventListener("click", async ()=>{
+      try{
+        const txt = await navigator.clipboard.readText();
+        ta.value = txt;
+        state.slots[idx]=txt;
+        saveState(state);
+        refreshStatus();
+        updateWindowLabel();
+        autoSuggestTarget();
+        toast("Đã dán từ clipboard");
+      }catch(e){
+        toast("Không đọc được clipboard. Hãy dán thủ công (press & hold).");
+      }
+    });
+
+    slotsEl.appendChild(box);
+    // initial status
+    setTimeout(refreshStatus, 0);
+  }
+  updateWindowLabel();
+}
+
+/** ========= Result & History ========= */
+function renderResult(res, parsed){
+  const area = document.getElementById("resultArea");
+  area.innerHTML = "";
+  if(!res.ok){
+    area.appendChild(el("div",{class:"tag bad"},[`❌ ${res.err}`]));
+    if(parsed.errors.length){
+      area.appendChild(el("div",{class:"card", style:"background:#0f1520"},[
+        el("div",{class:"meta"},"Khung lỗi:"),
+        el("ul",{class:"mono", style:"margin:6px 0 0 16px;color:#ffd7d7"}, parsed.errors.map(e=>el("li",{},[`Khung ${e.slot}: ${e.err}`])))
+      ]));
+    }
+    return;
+  }
+
+  const target = document.getElementById("targetDate").value || null;
+
+  const header = el("div",{class:"twoCol"},[
+    el("div",{class:"card", style:"background:#0f1520"},[
+      el("div",{class:"row"},[
+        el("span",{class:`tag ${tagClass(res.level)}`},`Mức độ: ${res.level}`),
+        el("span",{class:"tag neu"},`AUTO SIGNAL: ${res.auto}`),
+        el("span",{class:"tag neu"},`MODE: ${res.mode}`),
+      ]),
+      el("div",{class:"kpi"},[
+        el("div",{class:"box"},[
+          el("div",{class:"lab"},"CANDIDATE (chốt)"),
+          el("div",{class:"val mono"}, res.candidate || "—"),
+        ]),
+        el("div",{class:"box"},[
+          el("div",{class:"lab"},"DOUBLE SCORE"),
+          el("div",{class:"val"}, (res.ds ?? 0).toFixed(2)),
+        ]),
+      ]),
+      el("div",{class:"hr"}),
+      el("div",{class:"kv"},[el("span",{},["Ngày chốt (ngày đánh)"]), el("b",{}, target || "—")]),
+      el("div",{class:"kv"},[el("span",{},["Tầng chi phối (10 ngày)"]), el("b",{}, res.dom?.ok ? `${res.dom.layer}x (${Math.round(res.dom.pct*100)}%)` : "—")]),
+      el("div",{class:"kv"},[el("span",{},["Tầng T (chọn)"]), el("b",{}, res.T!==null ? `${res.T}x` : "—")]),
+      el("div",{class:"kv"},[el("span",{},["CONFIDENCE"]), el("b",{}, `${res.confidence.total}/6 (pha ${res.confidence.pha}, trục ${res.confidence.truc}, tầng ${res.confidence.tang}, lệch ${res.confidence.lech})`)]),
+      el("div",{class:"kv"},[el("span",{},["KILL"]), el("b",{}, res.kill?.on ? "ON" : "OFF")]),
+      el("div",{class:"kv"},[el("span",{},["Phân loại (mục VI)"]), el("b",{}, res.classBySpec)]),
+    ]),
+    el("div",{class:"card", style:"background:#0f1520"},[
+      el("div",{style:"font-weight:900;margin-bottom:6px"},"Điểm v9.1 / v9.2"),
+      el("div",{class:"kv"},[el("span",{},["SCORE v9.1"]), el("b",{}, (res.v91?.total ?? 0).toFixed(2))]),
+      el("div",{class:"kv"},[el("span",{},[" • A Tầng (0–4)"]), el("b",{}, (res.v91?.A ?? 0).toFixed(1))]),
+      el("div",{class:"kv"},[el("span",{},[" • B Trục (0–3)"]), el("b",{}, (res.v91?.B ?? 0).toFixed(1))]),
+      el("div",{class:"kv"},[el("span",{},[" • C Candidate (0–3)"]), el("b",{}, (res.v91?.C ?? 0).toFixed(2))]),
+      el("div",{class:"kv"},[el("span",{},[" • Trừ điểm"]), el("b",{}, (res.v91?.penalty ?? 0).toFixed(1))]),
+      el("div",{class:"hr"}),
+      el("div",{class:"kv"},[el("span",{},["SCORE v9.2"]), el("b",{}, (res.v92?.total ?? 0).toFixed(2))]),
+      el("div",{class:"hr"}),
+      el("div",{class:"kv"},[el("span",{},["KILL detail"]), el("b",{}, res.kill?.on ? "ON" : "OFF")]),
+      el("div",{class:"small mono"}, `cond1(nhiễu)=${res.kill.cond1} | cond2(DB+G1+G2)=${res.kill.cond2} | cond3(cand>=3/3day)=${res.kill.cond3} | cond4(top1 không áp đảo)=${res.kill.cond4}`),
+    ])
+  ]);
+
+  area.appendChild(header);
+
+  // show top 10 in T layer
+  if(res.candTop && res.candTop.length){
+    area.appendChild(el("div",{class:"card", style:"background:#0f1520"},[
+      el("div",{style:"font-weight:900;margin-bottom:6px"},`Top 10 số trong tầng ${res.T}x (đã tính +2/+1/+0.5, phạt N-1 & liên tiếp; PRO giảm 50% nếu số đẹp lệch pha)`),
+      el("div",{class:"mono", style:"font-size:12px;color:#cfe0f5;white-space:pre-wrap"},
+        res.candTop.map((x,i)=>`${String(i+1).padStart(2,"0")}. ${x.n}  pts=${x.score.toFixed(2)}  adj=${x.adjScore.toFixed(2)}${x.isN1?"  [N-1]":""}${x.isConsec?"  [2 ngày]":""}`).join("\n")
+      )
+    ]));
+  }
+
+  if(parsed.errors.length){
+    area.appendChild(el("div",{class:"card", style:"background:#0f1520"},[
+      el("div",{class:"meta"},"Khung lỗi (bỏ qua khi tính):"),
+      el("ul",{class:"mono", style:"margin:6px 0 0 16px;color:#ffd7d7"}, parsed.errors.map(e=>el("li",{},[`Khung ${e.slot}: ${e.err}`])))
+    ]));
+  }
+
+  const saveRow = el("div",{class:"row"},[
+    el("button",{class:"btn acc", id:"savePickBtn", type:"button"},["Lưu vào lịch sử"]),
+    el("span",{class:"meta"},"(Khi có KQ, vào lịch sử bấm Trúng/Trượt)")
+  ]);
+  area.appendChild(saveRow);
+
+  document.getElementById("savePickBtn").onclick = ()=>{
+    const hist = loadHistory();
+    const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+"_"+Math.random();
+    hist.unshift({
+      id,
+      createdAt: new Date().toISOString(),
+      targetDate: target,
+      windowStart: res.days10[0]?.date || null,
+      windowEnd: res.days10[res.days10.length-1]?.date || null,
+      candidate: res.candidate,
+      T: res.T,
+      dom: res.dom?.ok ? `${res.dom.layer}x` : null,
+      mode: res.mode,
+      confidence: res.confidence.total,
+      kill: res.kill.on,
+      v91: Number((res.v91.total ?? 0).toFixed(2)),
+      v92: Number((res.v92.total ?? 0).toFixed(2)),
+      doubleScore: Number((res.ds ?? 0).toFixed(2)),
+      level: res.level,
+      auto: res.auto,
+      outcome: "PENDING"
+    });
+    saveHistory(hist);
+    renderHistory();
+    document.getElementById("lastPick").textContent = res.candidate || "—";
+    toast("Đã lưu lịch sử");
+  };
+}
+
+function renderHistory(){
+  const hist = loadHistory();
+  const box = document.getElementById("history");
+  box.innerHTML = "";
+  if(!hist.length){
+    box.appendChild(el("div",{class:"meta"},"Chưa có lịch sử."));
+  }else{
+    for(const item of hist){
+      const t = new Date(item.createdAt);
+      const title = `${item.candidate || "—"} • ${item.level || "—"} • DS ${item.doubleScore ?? "—"}`;
+      const badge = item.outcome==="HIT" ? el("span",{class:"tag ok"},"TRÚNG")
+                    : item.outcome==="MISS" ? el("span",{class:"tag bad"},"TRƯỢT")
+                    : el("span",{class:"tag neu"},"CHỜ KQ");
+      const node = el("div",{class:"historyItem"},[
+        el("div",{class:"historyTop"},[
+          el("div",{},[
+            el("strong",{},title),
+            el("div",{class:"small"},`Lưu lúc ${t.toLocaleString()} • ngày đánh ${item.targetDate || "—"} • cửa sổ ${item.windowStart || "—"} → ${item.windowEnd || "—"}`)
+          ]),
+          badge
+        ]),
+        el("div",{class:"twoCol"},[
+          el("div",{class:"kv"},[el("span",{},["MODE / Tầng"]), el("b",{}, `${item.mode || "—"} / ${item.T!==null?item.T+"x":"—"}`)]),
+          el("div",{class:"kv"},[el("span",{},["v9.1 / v9.2"]), el("b",{}, `${item.v91 ?? "—"} / ${item.v92 ?? "—"}`)]),
+        ]),
+        el("div",{class:"row"},[
+          el("button",{class:"btn small", type:"button"},["Trúng"]),
+          el("button",{class:"btn small", type:"button"},["Trượt"]),
+          el("button",{class:"btn small danger", type:"button"},["Xoá"])
+        ])
+      ]);
+      const [bHit,bMiss,bDel] = node.querySelectorAll("button");
+      bHit.onclick = ()=>{ item.outcome="HIT"; saveHistory(hist); renderHistory(); updateHitRate(); };
+      bMiss.onclick = ()=>{ item.outcome="MISS"; saveHistory(hist); renderHistory(); updateHitRate(); };
+      bDel.onclick = ()=>{
+        const idx = hist.findIndex(x=>x.id===item.id);
+        if(idx>=0){ hist.splice(idx,1); saveHistory(hist); renderHistory(); updateHitRate(); }
+      };
+      box.appendChild(node);
+    }
+  }
+  updateHitRate();
+}
+function updateHitRate(){
+  const hist = loadHistory();
+  const done = hist.filter(x=>x.outcome==="HIT"||x.outcome==="MISS");
+  if(!done.length){ document.getElementById("hitRate").textContent="—"; return; }
+  const hit = done.filter(x=>x.outcome==="HIT").length;
+  const rate = (hit/done.length)*100;
+  document.getElementById("hitRate").textContent = `${hit}/${done.length} (${rate.toFixed(0)}%)`;
+}
+
+/** ========= Target date helper ========= */
+function autoSuggestTarget(){
+  // set target date = newest date + 1 day if empty
+  const inp = document.getElementById("targetDate");
+  if(inp.value) return;
+  const parsed = collectParsed();
+  if(parsed.okDays.length===0) return;
+  const newest = parsed.okDays[parsed.okDays.length-1].date; // yyyy-mm-dd
+  const d = new Date(newest+"T00:00:00");
+  d.setDate(d.getDate()+1);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  inp.value = `${yyyy}-${mm}-${dd}`;
+}
+
+/** ========= Buttons ========= */
+document.getElementById("runBtn").addEventListener("click", ()=>{
+  const parsed = collectParsed();
+  if(parsed.okDays.length !== 10){
+    toast("Cần đúng 10 ngày hợp lệ (27 lô/ngày).");
+  }
+  const res = runEngine(parsed.okDays);
+  renderResult(res, parsed);
+  if(res.ok && res.candidate) document.getElementById("lastPick").textContent = res.candidate;
+});
+
+document.getElementById("clearAllBtn").addEventListener("click", ()=>{
+  if(!confirm("Xoá sạch 10 khung nhập?")) return;
+  state.slots = Array(10).fill("");
+  saveState(state);
+  renderSlots();
+  toast("Đã xoá toàn bộ");
+});
+
+document.getElementById("wipeHistoryBtn").addEventListener("click", ()=>{
+  if(!confirm("Xoá toàn bộ lịch sử chốt?")) return;
+  saveHistory([]);
+  renderHistory();
+  toast("Đã xoá lịch sử");
+});
+
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  const hist = loadHistory();
+  const blob = new Blob([JSON.stringify(hist,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "lock_soi_history.json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("fillDemoBtn").addEventListener("click", ()=>{
+  const demo = `KQ XSMB 13/02/2026
+
+ĐB: 93177
+G1: 17455
+G2: 10301 37583
+G3: 69511 81888 38876 04075 94073 91303
+G4: 4363 7407 1202 9519
+G5: 7421 5972 7698 7059 2726 3790
+G6: 717 473 561
+G7: 73 09 10 01`;
+  const idx = state.slots.findIndex(x=>!x.trim());
+  const target = idx>=0 ? idx : 9;
+  state.slots[target] = demo;
+  saveState(state);
+  renderSlots();
+  autoSuggestTarget();
+  toast(`Đã dán demo vào khung ${target+1}`);
+});
+
+/** target date persistence */
+const tIn = document.getElementById("targetDate");
+try{
+  const saved = localStorage.getItem(LS_TARGET);
+  if(saved) tIn.value = saved;
+}catch(e){}
+tIn.addEventListener("input", ()=>{ localStorage.setItem(LS_TARGET, tIn.value); });
+
+/** init */
+renderSlots();
+renderHistory();
+updateHitRate();
+autoSuggestTarget();
+</script>
+</body>
+</html>
