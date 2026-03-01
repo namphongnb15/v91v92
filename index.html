@@ -145,7 +145,7 @@ const LS_TARGET = "lock_soi_v91_v92_target_v2";
 
 function loadState(){
   try{ return JSON.parse(localStorage.getItem(LS_KEY)) || { slots: Array(10).fill("") }; }
-  catch(e){ return { slots: Array(10).fill("") }; }
+  catch(e){ return { slots: Array(10).fill(""), slotDates: Array(10).fill("") }; }
 }
 function saveState(state){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 function loadHistory(){
@@ -183,6 +183,17 @@ function last2(numStr){
   if(!digits) return null;
   return digits.slice(-2).padStart(2,"0");
 }
+
+  function shiftISO(iso, deltaDays){
+    try{
+      const [y,m,d] = iso.split('-').map(Number);
+      if(!y||!m||!d) return null;
+      const dt = new Date(Date.UTC(y, m-1, d));
+      dt.setUTCDate(dt.getUTCDate()+deltaDays);
+      return dt.toISOString().slice(0,10);
+    }catch(e){ return null; }
+  }
+
 function parseDate(raw){
   const s = (raw||"").replace(/\u00A0/g," ");
   // Accept: dd/mm/yyyy, dd-mm-yyyy, dd.mm.yyyy, yyyy-mm-dd, yyyy/mm/dd, and also dd/mm/yy (->20yy).
@@ -214,12 +225,12 @@ function parseDate(raw){
   }
   return null;
 }
-function parseOneDay(raw){
+function parseOneDay(raw, slotIndex, fallbackISO, targetISO){
   const text = (raw||"").replace(/\u00A0/g," ").trim(); // normalize NBSP
   if(!text) return null;
 
   const date = parseDate(text);
-  if(!date) return { ok:false, err:"Không thấy ngày (dd/mm/yyyy) trong đoạn KQ." };
+  if(!date){ date = null; }
 
   // Pre-normalize common variants: G.1 -> G1, G 1 -> G1, ĐB! -> ĐB
   const normText = text
@@ -628,31 +639,40 @@ function tagClass(level){
 const state = loadState();
 const slotsEl = document.getElementById("slots");
 
+
 function collectParsed(){
   const okDays = [];
   const errors = [];
+  const targetInput = document.getElementById("targetDate");
+  const targetDate = targetInput && targetInput.value ? new Date(targetInput.value+"T00:00:00") : null;
+
   for(let i=0;i<10;i++){
     const raw = (state.slots[i]||"").trim();
     if(!raw) continue;
     const p = parseOneDay(raw);
-    if(!p || !p.ok){
+    if(!p || p.ok===false){
       errors.push({slot:i+1, err:p?.err || "Parse fail"});
       continue;
     }
-    okDays.push({ ...p, __slot:i+1 });
-  }
 
-  // Detect duplicate dates explicitly (do NOT silently drop)
-  const firstSlotByDate = new Map();
-  for(const d of okDays){
-    if(firstSlotByDate.has(d.date)){
-      errors.push({slot:d.__slot, err:`Trùng ngày với khung ${firstSlotByDate.get(d.date)}. Mỗi ngày phải là 1 khung duy nhất.`});
-    }else{
-      firstSlotByDate.set(d.date, d.__slot);
+    // Auto infer date if missing
+    if(!p.date){
+      if(targetDate){
+        const d = new Date(targetDate);
+        d.setDate(d.getDate() - (i+1));
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        p.date = `${yyyy}-${mm}-${dd}`;
+      } else {
+        errors.push({slot:i+1, err:"Thiếu ngày và chưa có Ngày chốt để suy ra."});
+        continue;
+      }
     }
+
+    okDays.push(p);
   }
 
-  // Keep unique dates only
   const uniqMap = new Map();
   for(const d of okDays){
     if(!uniqMap.has(d.date)) uniqMap.set(d.date, d);
